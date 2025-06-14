@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>妞布衣坊 | 当季LOOK展示</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500&display=swap">
+    <style>
+        :root {
+            --primary-color: #FFD1DC; /* 淡粉色 */
+            --secondary-color: #F5F5F5; /* 极简白 */
+            --accent-color: #A8D8EA; /* 淡蓝色 */
+            --text-color: #333333;
+            --light-text: #777777;
+        }
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+            position: relative;
+        }
+        
+        h1 {
+            font-weight: 300;
+            font-size: 2.5rem;
+            margin: 0;
+            color: var(--text-color);
+        }
+        
+        .subtitle {
+            font-weight: 300;
+            color: var(--light-text);
+            margin-top: 10px;
+        }
+        
+        .admin-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .admin-toggle {
+            background: none;
+            border: 1px solid var(--light-text);
+            color: var(--light-text);
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .admin-toggle:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+        
+        .upload-section {
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            width: 250px;
+            z-index: 100;
+            display: none;
+        }
+        
+        .upload-section.visible {
+            display: block;
+        }
+        
+        .upload-title {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-weight: 400;
+            font-size: 1rem;
+        }
+        
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        
+        .product-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .product-image-container {
+            width: 100%;
+            padding-bottom: 133.33%; /* 4:3比例 */
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .product-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .product-card:hover .product-image {
+            transform: scale(1.05);
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .product-info {
+            padding: 20px;
+        }
+        
+        .product-title {
+            font-weight: 400;
+            margin: 0 0 10px 0;
+        }
+        
+        .product-price {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .price {
+            font-size: 1.2rem;
+            color: var(--text-color);
+        }
+        
+        .edit-btn {
+            background: none;
+            border: 1px solid var(--light-text);
+            color: var(--light-text);
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: none;
+        }
+        
+        .edit-mode .edit-btn {
+            display: block;
+        }
+        
+        .edit-btn:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+        
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            margin-bottom: 5px;
+            color: var(--light-text);
+            font-size: 0.9rem;
+        }
+        
+        .form-group input, .form-group textarea {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+        
+        .upload-image-container {
+            width: 100%;
+            padding-bottom: 133.33%;
+            position: relative;
+            border: 1px dashed #ddd;
+            background-color: #fafafa;
+            cursor: pointer;
+            overflow: hidden;
+        }
+        
+        .upload-image-container:hover {
+            border-color: var(--primary-color);
+        }
+        
+        .upload-image-preview {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .upload-image-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--light-text);
+            font-size: 0.9rem;
+        }
+        
+        .upload-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s ease;
+        }
+        
+        .upload-btn:hover {
+            background-color: #ffb6c1;
+        }
+        
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 0;
+            color: var(--light-text);
+        }
+        
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            color: var(--light-text);
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+        }
+        
+        .modal-title {
+            margin-top: 0;
+        }
+        
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .modal-btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .cancel-btn {
+            background: none;
+            border: 1px solid var(--light-text);
+            color: var(--light-text);
+        }
+        
+        .save-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+        }
+        
+        /* 密码输入框样式 */
+        .password-input {
+            margin-top: 10px;
+        }
+        
+        .password-input input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="admin-controls">
+                <button class="admin-toggle" id="adminToggle">管理员</button>
+                <div class="upload-section" id="uploadSection">
+                    <h3 class="upload-title">上传新品</h3>
+                    <form class="upload-form" id="uploadForm">
+                        <div class="form-group">
+                            <label for="productImage">商品图片</label>
+                            <div class="upload-image-container" id="imageUploadContainer">
+                                <img id="imagePreview" class="upload-image-preview" style="display: none;">
+                                <div class="upload-image-placeholder" id="imagePlaceholder">
+                                    + 选择图片
+                                </div>
+                                <input type="file" id="productImage" accept="image/*" style="display: none;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="productName">商品名称</label>
+                            <input type="text" id="productName" placeholder="请输入商品名称" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="productPrice">商品价格</label>
+                            <input type="number" id="productPrice" placeholder="请输入价格" min="0" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="productDesc">商品描述 (可选)</label>
+                            <textarea id="productDesc" rows="2" placeholder="请输入商品描述"></textarea>
+                        </div>
+                        <button type="submit" class="upload-btn">上传商品</button>
+                    </form>
+                </div>
+            </div>
+            <h1>妞布衣坊</h1>
+            <div class="subtitle">当季LOOK展示</div>
+        </header>
+        
+        <div class="gallery" id="productGallery">
+            <!-- 商品将通过JavaScript动态添加 -->
+            <div class="empty-state">
+                <div class="empty-icon">🛍️</div>
+                <p>暂无商品，请管理员添加新品</p>
+            </div>
+        </div>
+        
+        <footer>
+            &copy; 2023 妞布衣坊 版权所有
+        </footer>
+    </div>
+    
+    <!-- 密码验证模态框 -->
+    <div class="modal" id="passwordModal">
+        <div class="modal-content">
+            <h3 class="modal-title">管理员验证</h3>
+            <div class="form-group password-input">
+                <input type="password" id="adminPassword" placeholder="请输入管理员密码">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="modal-btn cancel-btn" id="cancelPassword">取消</button>
+                <button type="button" class="modal-btn save-btn" id="confirmPassword">确认</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 编辑模态框 -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <h3 class="modal-title">编辑商品信息</h3>
+            <form id="editForm">
+                <div class="form-group">
+                    <label for="editName">商品名称</label>
+                    <input type="text" id="editName" required>
+                </div>
+                <div class="form-group">
+                    <label for="editPrice">商品价格</label>
+                    <input type="number" id="editPrice" min="0" step="0.01" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="modal-btn cancel-btn" id="cancelEdit">取消</button>
+                    <button type="submit" class="modal-btn save-btn">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // 存储商品数据
+        let products = [];
+        let currentEditIndex = -1;
+        let isAdmin = false;
+        const ADMIN_PASSWORD = "123456"; // 管理员密码
+        
+        // DOM元素
+        const gallery = document.getElementById('productGallery');
+        const uploadForm = document.getElementById('uploadForm');
+        const editForm = document.getElementById('editForm');
+        const imageUploadContainer = document.getElementById('imageUploadContainer');
+        const imageInput = document.getElementById('productImage');
+        const imagePreview = document.getElementById('imagePreview');
+        const imagePlaceholder = document.getElementById('imagePlaceholder');
+        const uploadSection = document.getElementById('uploadSection');
+        const adminToggle = document.getElementById('adminToggle');
+        const passwordModal = document.getElementById('passwordModal');
+        const adminPasswordInput = document.getElementById('adminPassword');
+        const confirmPasswordBtn = document.getElementById('confirmPassword');
+        const cancelPasswordBtn = document.getElementById('cancelPassword');
+        const editModal = document.getElementById('editModal');
+        const cancelEditBtn = document.getElementById('cancelEdit');
+        
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            // 从localStorage加载商品数据
+            loadProducts();
+            renderProducts();
+            
+            // 图片上传点击事件
+            imageUploadContainer.addEventListener('click', function() {
+                if (!isAdmin) return;
+                imageInput.click();
+            });
+            
+            // 图片选择变化事件
+            imageInput.addEventListener('change', function(e) {
+                if (e.target.files && e.target.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        imagePreview.src = event.target.result;
+                        imagePreview.style.display = 'block';
+                        imagePlaceholder.style.display = 'none';
+                    };
+                    reader.readAsDataURL(e.target.files[0]);
+                }
+            });
+            
+            // 表单提交事件
+            uploadForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (!isAdmin) return;
+                addNewProduct();
+            });
+            
+            editForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (!isAdmin) return;
+                saveProductChanges();
+            });
+            
+            // 管理员按钮点击事件
+            adminToggle.addEventListener('click', function() {
+                if (isAdmin) {
+                    logoutAdmin();
+                } else {
+                    passwordModal.style.display = 'flex';
+                }
+            });
+            
+            // 密码确认按钮
+            confirmPasswordBtn.addEventListener('click', function() {
+                if (adminPasswordInput.value === ADMIN_PASSWORD) {
+                    loginAdmin();
+                } else {
+                    alert('密码错误');
+                }
+            });
+            
+            cancelPasswordBtn.addEventListener('click', function() {
+                passwordModal.style.display = 'none';
+                adminPasswordInput.value = '';
+            });
+            
+            cancelEditBtn.addEventListener('click', closeModal);
+        });
+        
+        // 从localStorage加载商品数据
+        function loadProducts() {
+            const savedProducts = localStorage.getItem('niubuyifang-products');
+            if (savedProducts) {
+                products = JSON.parse(savedProducts);
+            }
+        }
+        
+        // 保存商品数据到localStorage
+        function saveProducts() {
+            localStorage.setItem('niubuyifang-products', JSON.stringify(products));
+        }
+        
+        // 管理员登录
+        function loginAdmin() {
+            isAdmin = true;
+            adminToggle.textContent = '退出管理';
+            uploadSection.classList.add('visible');
+            document.body.classList.add('edit-mode');
+            passwordModal.style.display = 'none';
+            adminPasswordInput.value = '';
+            renderProducts();
+        }
+        
+        // 管理员退出
+        function logoutAdmin() {
+            isAdmin = false;
+            adminToggle.textContent = '管理员';
+            uploadSection.classList.remove('visible');
+            document.body.classList.remove('edit-mode');
+            renderProducts();
+        }
+        
+        // 渲染商品列表
+        function renderProducts() {
+            gallery.innerHTML = '';
+            
+            if (products.length === 0) {
+                gallery.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🛍️</div>
+                        <p>${isAdmin ? '暂无商品，请添加新品' : '暂无商品，请管理员添加新品'}</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            products.forEach((product, index) => {
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                productCard.innerHTML = `
+                    <div class="product-image-container">
+                        <img src="${product.image}" alt="${product.name}" class="product-image">
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title">${product.name}</h3>
+                        <div class="product-price">
+                            <span class="price">¥${product.price.toFixed(2)}</span>
+                            <button class="edit-btn" data-index="${index}">编辑</button>
+                        </div>
+                    </div>
+                `;
+                
+                // 添加编辑按钮事件
+                const editBtn = productCard.querySelector('.edit-btn');
+                editBtn.addEventListener('click', function() {
+                    if (!isAdmin) return;
+                    openEditModal(index);
+                });
+                
+                gallery.appendChild(productCard);
+            });
+        }
+        
+        // 添加新商品
+        function addNewProduct() {
+            const nameInput = document.getElementById('productName');
+            const priceInput = document.getElementById('productPrice');
+            const descInput = document.getElementById('productDesc');
+            
+            if (!nameInput.value || !priceInput.value || !imageInput.files[0]) {
+                alert('请填写完整信息并上传图片');
+                return;
+            }
+            
+            const newProduct = {
+                name: nameInput.value,
+                price: parseFloat(priceInput.value),
+                desc: descInput.value || '',
+                image: imagePreview.src
+            };
+            
+            products.push(newProduct);
+            saveProducts(); // 保存到localStorage
+            renderProducts();
+            
+            // 重置表单
+            uploadForm.reset();
+            imagePreview.style.display = 'none';
+            imagePlaceholder.style.display = 'flex';
+            imagePreview.src = '';
+            
+            alert('商品已成功添加！');
+        }
+        
+        // 打开编辑模态框
+        function openEditModal(index) {
+            currentEditIndex = index;
+            const product = products[index];
+            
+            document.getElementById('editName').value = product.name;
+            document.getElementById('editPrice').value = product.price;
+            
+            editModal.style.display = 'flex';
+        }
+        
+        // 关闭模态框
+        function closeModal() {
+            editModal.style.display = 'none';
+        }
+        
+        // 保存商品修改
+        function saveProductChanges() {
+            if (currentEditIndex === -1) return;
+            
+            const nameInput = document.getElementById('editName');
+            const priceInput = document.getElementById('editPrice');
+            
+            if (!nameInput.value || !priceInput.value) {
+                alert('请填写完整信息');
+                return;
+            }
+            
+            products[currentEditIndex].name = nameInput.value;
+            products[currentEditIndex].price = parseFloat(priceInput.value);
+            
+            saveProducts(); // 保存到localStorage
+            renderProducts();
+            closeModal();
+            
+            alert('修改已保存！');
+        }
+    </script>
+</body>
+</html>
